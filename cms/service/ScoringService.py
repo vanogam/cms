@@ -32,7 +32,7 @@ from cms.db import SessionGen, Submission, Dataset, get_submission_results
 from cms.io import Executor, TriggeredService, rpc_method
 from cmscommon.datetime import make_datetime
 from .scoringoperations import ScoringOperation, get_operations
-
+from cms.api.informatics_ge_api import send_submission_result
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,8 @@ class ScoringExecutor(Executor):
 
             # Store it.
             session.commit()
-
+            # logger.info("results: %s", score_type.compute_score(submission_result))
+            send_submission_result(operation.submission_id, submission_result.score, submission_result.score_details)
             # If dataset is the active one, update RWS.
             if dataset is submission.task.active_dataset:
                 logger.info(

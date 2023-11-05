@@ -52,6 +52,7 @@ from .esoperations import ESOperation, get_relevant_operations, \
     user_test_get_operations
 from .flushingdict import FlushingDict
 from .workerpool import WorkerPool
+from cms.api.informatics_ge_api import send_submission_compilation_result
 
 
 logger = logging.getLogger(__name__)
@@ -287,7 +288,7 @@ class EvaluationService(TriggeredService):
             ServiceCoord("ScoringService", 0))
 
         self.add_executor(EvaluationExecutor(self))
-        self.start_sweeper(117.0)
+        self.start_sweeper(7.0)
 
         self.add_timeout(self.check_workers_timeout, None,
                          EvaluationService.WORKER_TIMEOUT_CHECK_TIME
@@ -669,7 +670,11 @@ class EvaluationService(TriggeredService):
 
         """
         submission = submission_result.submission
-
+        logger.info("submission: %s", vars(submission))
+        logger.info("submission_res: %s", vars(submission_result))
+        send_submission_compilation_result(cms_id=submission.id,
+                                           compilation_result=submission_result.compilation_outcome,
+                                           compilation_message=submission_result.compilation_stderr)
         # If compilation was ok, we emit a satisfied log message.
         if submission_result.compilation_succeeded():
             logger.info("Submission %d(%d) was compiled successfully.",
@@ -726,6 +731,9 @@ class EvaluationService(TriggeredService):
             logger.info("Submission %d(%d) was evaluated successfully.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
+
+            logger.info("temp: %s", vars(submission_result))
+            logger.info("temp: %s", vars(submission_result.submission))
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)

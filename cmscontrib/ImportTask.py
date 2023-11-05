@@ -44,7 +44,7 @@ from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, contest_from_db, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
-
+from cms.api.informatics_ge_api import register_task
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class TaskImporter:
 
     """
 
-    def __init__(self, path, prefix, override_name, update, no_statement,
+    def __init__(self, appid, path, prefix, override_name, update, no_statement,
                  contest_id, loader_class):
         """Create the importer object for a task.
 
@@ -69,6 +69,7 @@ class TaskImporter:
             if this was an update, will remain tied to the previous contest.
 
         """
+        self.appid = appid
         self.file_cacher = FileCacher()
         self.prefix = prefix
         self.override_name = override_name
@@ -115,6 +116,7 @@ class TaskImporter:
             session.commit()
             task_id = task.id
 
+        register_task(cms_id=task_id, appid=self.appid, logger=logger)
         logger.info("Import finished (new task id: %s).", task_id)
         return True
 
@@ -196,6 +198,11 @@ def main():
         help="the new name that will override the task name"
     )
     parser.add_argument(
+        "-I", "--appid",
+        action="store", type=utf8_decoder,
+        help="the id from request"
+    )
+    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import task(s)"
@@ -210,6 +217,7 @@ def main():
     )
 
     importer = TaskImporter(path=args.target,
+                            appid=args.appid,
                             update=args.update,
                             no_statement=args.no_statement,
                             contest_id=args.contest_id,

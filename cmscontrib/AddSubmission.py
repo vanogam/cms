@@ -31,7 +31,7 @@ from cms.db.filecacher import FileCacher
 from cms.grading.languagemanager import filename_to_language
 from cms.io import RemoteServiceClient
 from cmscommon.datetime import make_datetime
-
+from cms.api.informatics_ge_api import register_submission
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ def language_from_submitted_files(files):
     return language
 
 
-def add_submission(contest_id, username, task_name, timestamp, files):
+def add_submission(contest_id, username, task_name, timestamp, files, appid):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
@@ -140,6 +140,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             session.add(File(filename, digest, submission=submission))
         session.add(submission)
         session.commit()
+        register_submission(submission.id, appid)
         maybe_send_notification(submission.id)
 
     return True
@@ -167,6 +168,8 @@ def main():
     parser.add_argument("-t", "--timestamp", action="store", type=int,
                         help="timestamp of the submission in seconds from "
                         "epoch, e.g. `date +%%s` (now if not set)")
+    parser.add_argument("-I", "--appid", action="store", type=int,
+                        help="ID in main app ")
 
     args = parser.parse_args()
 
@@ -193,7 +196,8 @@ def main():
                              username=args.username,
                              task_name=args.task_name,
                              timestamp=args.timestamp,
-                             files=files)
+                             files=files,
+                             appid=args.appid)
     return 0 if success is True else 1
 
 

@@ -36,6 +36,7 @@ from cms.grading import JobException
 from cms.grading.Job import CompilationJob, EvaluationJob, JobGroup
 from cms.grading.tasktypes import get_task_type
 from cms.io import Service, rpc_method
+from cms.api.informatics_ge_api import update_submission_test
 
 
 logger = logging.getLogger(__name__)
@@ -134,6 +135,10 @@ class Worker(Service):
                             job.plus = {"tombstone": True}
                     else:
                         self._fake_work(job)
+                    logger.info("JOB: %s", vars(job.operation))
+                    if job.operation is not None:
+                        if job.operation.type_ == "evaluate":
+                            update_submission_test(job.operation.object_id, job.operation.testcase_codename)
 
                     logger.info("Finished job.",
                                 extra={"operation": job.info})
