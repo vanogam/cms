@@ -1,5 +1,7 @@
 import requests
+import logging
 
+logger = logging.getLogger(__name__)
 informatics_user = "cmsUser"
 informatics_password = "1m49zD*YNlNsaDa5"
 informatics_host = "http://localhost:8080"
@@ -11,6 +13,7 @@ def register_task(appid, cms_id, logger):
         "appID": appid
     }
     session = _get_session()
+    logger.info("Register task: cmsID=%s appID=%s", cms_id, appid)
     try:
         session.post(f"{informatics_host}/cms-api/register-task", json=params)
     except:
@@ -22,6 +25,7 @@ def register_submission(cms_id, appid):
         "appID": appid
     }
     session = _get_session()
+    logger.info("Register submission: cmsID=%s appID=%s", cms_id, appid)
     try:
         session.post(f"{informatics_host}/cms-api/register-submission", json=params)
     except:
@@ -34,6 +38,7 @@ def send_submission_compilation_result(cms_id, compilation_result, compilation_m
         "message": compilation_message
     }
     session = _get_session()
+    logger.info("Submission compilation result: cmsID=%s", cms_id)
     try:
         session.post(f"{informatics_host}/cms-api/submission-compilation-result", json=params)
     except:
@@ -46,6 +51,7 @@ def send_submission_result(cms_id, score, submission_message):
         "submissionResult": submission_message
     }
     session = _get_session()
+    logger.info("Submission result: cmsID=%s", cms_id)
     try:
         session.post(f"{informatics_host}/cms-api/submission-result", json=params)
     except:
@@ -57,6 +63,7 @@ def update_submission_test(submission_id, test_number):
         "testNumber": test_number
     }
     session = _get_session()
+    logger.info("update submission test: submissionID=%s", submission_id)
     try:
         session.post(f"{informatics_host}/cms-api/update-submission-test", json=params)
     except:

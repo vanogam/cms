@@ -490,14 +490,15 @@ class RemoteServiceClient(RemoteServiceBase):
             raise
 
         for family, type, proto, _canonname, sockaddr in addresses:
+            sock = gevent.socket.socket(family, type, proto)
             try:
                 host, port, *rest = sockaddr
                 logger.debug("Trying to connect to %s at port %d.", host, port)
-                sock = gevent.socket.socket(family, type, proto)
                 sock.connect(sockaddr)
             except OSError as error:
                 logger.debug("Couldn't connect to %s at %s port %d: %s.",
                              self._repr_remote(), host, port, error)
+                sock.close()
             else:
                 self.initialize(sock, self.remote_service_coord)
                 break
